@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <!-- <script src="static/js/bootstrap.min.js"></script> -->
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body style="padding: 5%;">
+        <div style="border-radius: 25px; border: 2px solid #73AD21; padding: 20px; ">
+            
+            <div id = "statusDiv"></div>
+            <div id = "ButtonDiv">
+                <h1>Shutdown device now?</h1>
+                <p>
+                    <button type="button" class="btn btn-primary" onclick = "changePage('/stop');">YES Shutdown now</button> <button type="button" class="btn btn-primary" onclick = "changePage('/');">NO cancel shutdown</button>
+                </p>
+            </div>
+        </div>
+
+  </body>
+  <script>
+  
+  function changePage(url){
+      if(url == '/stop'){
+        console.log("ShutDown Now")
+        
+        var status = document.getElementById("statusDiv");
+        var buttons = document.getElementById("ButtonDiv");
+        buttons.style="display:none;";
+        status.innerHTML = "<h1>Shutting down now.  Good night.</h1>";
+        
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                if (this.status == 200) {
+                    var data = this.responseText;
+                    console.log(data);
+
+                }else{
+                    console.log("Failure is me");
+                }
+            }
+        };
+        xhttp.open("GET", "/stop", true);
+        xhttp.send();
+      }else{
+        window.location.href = url;
+      }
+  }	
+  </script>
+</html>

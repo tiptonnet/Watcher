@@ -1,0 +1,14 @@
+<config>
+  <device_name>Active</device_name>
+  <sensitivity>100</sensitivity>
+  <dose_time>0.3</dose_time>
+  <dose_enabled>True</dose_enabled>
+  <ip_address>192.168.10.12</ip_address>
+  <local_port>5500</local_port>
+  <remote_ip>192.168.10.11</remote_ip>
+  <remote_port>5500</remote_port>
+  <description>Active platform</description>
+  <events>1</events>
+  <dose_interval>5</dose_interval>
+  <capture_image>0</capture_image>
+</config>

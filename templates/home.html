@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+      <title>{{config[1]}}</title>
+      <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta http-equiv="cache-control" content="max-age=0">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="-1">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="container">
+      <div style="border-radius: 25px; border: 2px solid #73AD21; padding: 5px; margin:10px "><br><br>
+      <table style="margin-left:100px">
+        <tr>
+          <td style="text-align:left"><img style = "border: 5px solid #555;" id="prev" src = "static/captures/preview.png" width = "540" height = "380" alt = "...LOADING..."></td>
+          <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </td>
+          <td style="text-align:right"><img style = "border: 5px solid #555;" id="capt" src = "static/captures/capture.png" width = "540" height = "380"></td>
+        </tr>
+        <tr>
+          <td>Live Capture</td>
+          <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+          <td>Event Capture</td>
+        </tr>
+        
+      </table>
+      <h1>Number of events: <span id="eventspan">{{config[9]}}</span></h1>
+    
+      <script>
+        window.setInterval('refresh()', 3000); 
+
+        // Refresh or reload page.
+        var capcount = 0;
+        function refresh() {
+          if(capcount > 1){capcount = 0;}
+          console.log('static/captures/preview_'+capcount+'.png?'+Math.random())
+          let prev = document.getElementById("prev");
+          prev.src = 'static/captures/preview_'+capcount+'.png?'+Math.random();
+          let capt = document.getElementById("capt");
+          capt.src = 'static/captures/capture.png?'+Math.random();
+          capcount = capcount+1
+          
+        }
+        
+      </script><br>	
+        <div class="row">
+            <div class="col-sm">
+                <h1>Configuration</h1>
+                <form method = "post" action = "/save_config">
+                    <label for="device_name" class="form-label">Device Name</label>
+                    <input type="text" class="form-text" value="{{config[1]}}" name="device_name" id="device_name"> <br>
+                    <label for="description" class="form-label">Description</label>
+                    <input type="text" class="form-text" value="{{config[0]}}" name="description" id="description"> <br>
+                    <label for="local_ip" class="form-label">Local IP</label>
+                    <input type="text" class="form-text" value="{{config[5]}}" name="ip_address" id="local_ip"> <br>
+                    <label for="local_port" class="form-label">Local Port</label>
+                    <input type="text" class="form-text" value="{{config[6]}}" name="local_port" id="local_port"> <br> 
+                    <label for="remote_ip" class="form-label">Remote IP</label>
+                    <input type="text" class="form-text" value="{{config[7]}}" name="remote_ip" id="remote_ip"> <br> 
+                    <label for="remote_port" class="form-label">Remote Port</label>
+                    <input type="text" class="form-text" value="{{config[8]}}" name="remote_port" id="remote_port"> <br>
+
+                    <label for="sensitivity" class="form-label">Motion Sensitivity: <span id ="sens">{{config[4]}}</span></label>
+                    <input type="range" onchange = "sens_update()" class="form-range" min="0" max="255" value="{{config[4]}}" title="{{config[4]}}" name="sensitivity" id="sensitivity"> <br>
+                    <label for="dose_enabled" class="form-label">Dose Pump</label>
+                    <select class="form-select" aria-label="Default" id="dose_enabled" name="dose_enabled">
+                        <option value="True" {% if config[2] == "True": %}selected{% endif %}>Enabled</option>
+                        <option value="False" {% if config[2] == "False": %}selected{% endif %}>Disabled</option>
+                    </select><br>                  
+                    <label for="dose_time" class="form-label">Dose Duration: <span id ="dur">{{config[3]}}</span> seconds</label>
+                    <input type="range" onchange = "dose_update()" class="form-range" min="0" max="2" step="0.1" value="{{config[3]}}" title="{{config[3]}}" name="dose_time" id="dose_time"> <br>
+                    <label for="dose_interval" class="form-label">Dose Delay: <span id ="interval">{{config[10]}}</span> seconds</label>
+                    <input type="range" onchange = "interval_update()" class="form-range" min="0" max="60" step="1" value="{{config[10]}}" title="{{config[10]}}" name="dose_interval" id="dose_interval"> <br>
+                    <label for="capture_enabled" class="form-label">Capture Image</label>
+                    <select class="form-select" aria-label="Default" id="capture_enabled" name="capture_image">
+                        <option value="1" {% if config[11] == "1": %}selected{% endif %}>Enabled</option>
+                        <option value="0" {% if config[11] == "0": %}selected{% endif %}>Disabled</option>
+                    </select><br> 
+                    <input  class="btn btn-primary" type="submit" value="Save"> |
+                    <a href = "/confirmrestart"><button type="button" class="btn btn-primary">Restart Device</button></a> | 
+                    <a href = "/confirmstop"><button type="button" class="btn btn-primary">Shutdown Device</button></a> |
+                    <button type="button" class="btn btn-primary" id="primebutton" onclick="PumpPrimer();">Prime Pump</button> <span id="pumpstat">Off</span>
+                </form>
+            </div>
+       </div>
+       <hr>
+       <div class="row">
+        <div class="col-sm">
+          
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Image File</th>
+                <th scope="col">Thumbnail</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for image in images %}
+              <tr>
+                <th scope="row">1</th>
+                <td>{{image}}</td>
+                <td><img src = "static/captures/{{image}}" width = "48" height = "48"></td>
+                <td><a href = "static/captures/{{image}}" target = "_blank">View</a> |<a href = "#" onclick="ConfirmDelete('{{image}}')">Delete</a> <a href = /download/{{image}}>Download</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+   </div></div>
+    <!-- Bootstrap Javascripts -->  
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script>
+      $('#myModal').on('shown.bs.modal', function () {
+          $('#myInput').trigger('focus')
+      })
+      function sens_update() {
+          let span = document.getElementById("sens");
+          let slider = document.getElementById("sensitivity");
+          console.log(slider.value)
+          span.textContent = slider.value;
+      }
+      function dose_update() {
+          let span = document.getElementById("dur");
+          let slider = document.getElementById("dose_time");
+          console.log(slider.value)
+          span.textContent = slider.value;
+      }
+      function interval_update() {
+          let span = document.getElementById("interval");
+          let slider = document.getElementById("dose_interval");
+          console.log(slider.value)
+          span.textContent = slider.value;
+      }
+      function ConfirmDelete(name) {
+        if (confirm("Are you sure you want to Delete: " + name + "? This is permanent and can not be restored")) {
+            window.location.href = "/DeleteImage/" + name
+        }
+      }
+      setInterval(GetData, 3000);
+      function GetData() {
+            console.log("getData")
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        var x = document.getElementById("eventspan");
+                        var data = this.responseText;
+                        x.textContent = data;
+                    }
+                }
+            };
+            xhttp.open("GET", "/GetEvents", true);
+            xhttp.send();
+        }
+        function PumpPrimer(){
+        console.log("PumpPrimer")
+            var button=document.getElementById("pumpstat");
+            var stat = button.textContent;
+            var action="0";
+            if(stat == "Off"){
+                action = "1";
+            }
+            console.log(action)
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        var x = document.getElementById("pumpstat");
+                        var data = this.responseText;
+                        x.textContent = data;
+                    }
+                }
+            };
+            xhttp.open("GET", "/primepump/"+action, true);
+            xhttp.send();        
+      }
+  </script>
+  </body>    
+</html> 
